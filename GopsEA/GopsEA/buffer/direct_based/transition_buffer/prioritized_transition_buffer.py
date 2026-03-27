@@ -6,6 +6,7 @@ from typing import Dict, Generator, Optional
 from GopsEA import configclass
 from dataclasses import MISSING
 from .direct_transition_buffer import DirectTransitionBuffer, DirectTransitionBufferCfg
+from .transition_batch import TransitionBatch
 
 
 class PrioritizedTransitionBuffer(DirectTransitionBuffer):
@@ -89,8 +90,17 @@ class PrioritizedTransitionBuffer(DirectTransitionBuffer):
         indices = (torch.arange(num_envs, device=self.device) + self.ptr) % self.max_steps
         
         # Store transitions (call parent method)
-        result = super().update_trans(
-            obs, critic_obs, actions, rewards, next_obs, next_critic_obs, termination, timeout
+        result = super().push(
+            TransitionBatch(
+                obs=obs,
+                critic_obs=critic_obs,
+                actions=actions,
+                rewards=rewards,
+                next_obs=next_obs,
+                next_critic_obs=next_critic_obs,
+                termination=termination,
+                timeout=timeout,
+            )
         )
         
         # Prepare priorities

@@ -37,7 +37,7 @@ torch.backends.cudnn.benchmark = False
 from isaaclab_tasks.utils import parse_env_cfg
 from isaaclab.utils.dict import print_dict
 from isaaclab.utils.io import dump_yaml
-import demo_tasks
+import gops_tasks  # noqa: F401
 
 from GopsEA.runners import BaseRunner
 from GopsEA.utils.env_wrapper.lab_wrapper import GopsEAEnvWrapper
@@ -52,7 +52,7 @@ def main():
         video_kwargs = {
             "video_folder": os.path.join(log_dir, "videos"),
             "step_trigger": lambda step: step % args_cli.video_interval == 0,
-            "video_length": args_cli.length,
+            "video_length": args_cli.video_length,
             "disable_logger": True,
         }
         print("[INFO] Recording videos during training.")

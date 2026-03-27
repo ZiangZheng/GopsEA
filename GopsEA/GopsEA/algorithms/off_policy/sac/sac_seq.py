@@ -1,10 +1,12 @@
 from GopsEA import configclass
+
 from .sac import SAC, SACCfg
 
-class SACTrans(SAC):
+
+class SACSeq(SAC):
     """Compatibility alias. Use SAC directly."""
-    
-    
+
+
 @configclass
-class SACTransCfg(SACCfg):
-    class_type: type[SAC] = SACTrans
+class SACSeqCfg(SACCfg):
+    class_type: type[SAC] = SACSeq

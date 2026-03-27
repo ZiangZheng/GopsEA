@@ -1,0 +1,26 @@
+{
+    "include": [
+        "source",
+        "scripts"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        "**/node_modules",
+        "**/.git"
+    ],
+    "extraPaths": [
+        "GopsEA",
+        "third_party/robotlib",
+        "third_party/gops_tasks",
+        "third_party/IsaacLab/source/isaaclab",
+        "third_party/IsaacLab/source/isaaclab_tasks",
+        "third_party/IsaacLab/source/isaaclab_rl",
+        "third_party/IsaacLab/source/isaaclab_mimic",
+        "third_party/IsaacLab/source/isaaclab_assets"
+    ],
+    "typeCheckingMode": "off",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "pythonVersion": "3.10",
+    "pythonPlatform": "Linux"
+}

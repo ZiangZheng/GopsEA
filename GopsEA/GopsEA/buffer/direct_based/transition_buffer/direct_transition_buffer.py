@@ -5,6 +5,7 @@ from typing import Dict, Generator
 from GopsEA import configclass
 from dataclasses import MISSING
 from GopsEA.buffer.replay_buffer_base import ReplayBufferBase, ReplayBufferBaseCfg
+from .transition_batch import TransitionBatch
 
 
 class DirectTransitionBuffer(ReplayBufferBase):
@@ -81,6 +82,30 @@ class DirectTransitionBuffer(ReplayBufferBase):
             Dictionary with statistics about the addition
         """
         return self.update_trans(obs, critic_obs, actions, rewards, next_obs, next_critic_obs, termination, timeout)
+
+    def push(self, batch: TransitionBatch) -> Dict[str, float]:
+        """Preferred insertion API."""
+        norm_batch = batch.normalize()
+        num_envs = norm_batch.obs.shape[0]
+        indices = (torch.arange(num_envs, device=self.device) + self.ptr) % self.max_steps
+
+        self.obs_buffer[indices] = norm_batch.obs
+        self.critic_obs_buffer[indices] = norm_batch.critic_obs
+        self.actions_buffer[indices] = norm_batch.actions
+        self.rewards_buffer[indices] = norm_batch.rewards
+        self.next_obs_buffer[indices] = norm_batch.next_obs
+        self.next_critic_obs_buffer[indices] = norm_batch.next_critic_obs
+        self.termination_buffer[indices] = norm_batch.termination
+        self.timeout_buffer[indices] = norm_batch.timeout
+
+        self.ptr = (self.ptr + num_envs) % self.max_steps
+        self.length = min(self.length + num_envs, self.max_steps)
+
+        return {
+            "buffer_length": self.length,
+            "buffer_capacity": self.max_steps,
+            "utilization": self.length / self.max_steps,
+        }
     
     def update_trans(
         self,
@@ -109,38 +134,18 @@ class DirectTransitionBuffer(ReplayBufferBase):
         Returns:
             Dictionary with statistics about the addition
         """
-        num_envs = obs.shape[0]
-        
-        # Ensure rewards, termination, timeout are 2D
-        if rewards.dim() == 1:
-            rewards = rewards.unsqueeze(-1)
-        if termination.dim() == 1:
-            termination = termination.unsqueeze(-1)
-        if timeout.dim() == 1:
-            timeout = timeout.unsqueeze(-1)
-        
-        # Calculate indices for circular buffer
-        indices = (torch.arange(num_envs, device=self.device) + self.ptr) % self.max_steps
-        
-        # Store transitions
-        self.obs_buffer[indices] = obs
-        self.critic_obs_buffer[indices] = critic_obs
-        self.actions_buffer[indices] = actions
-        self.rewards_buffer[indices] = rewards.float()
-        self.next_obs_buffer[indices] = next_obs
-        self.next_critic_obs_buffer[indices] = next_critic_obs
-        self.termination_buffer[indices] = termination.float()
-        self.timeout_buffer[indices] = timeout.float()
-        
-        # Update pointer and size
-        self.ptr = (self.ptr + num_envs) % self.max_steps
-        self.length = min(self.length + num_envs, self.max_steps)
-        
-        return {
-            "buffer_length": self.length,
-            "buffer_capacity": self.max_steps,
-            "utilization": self.length / self.max_steps,
-        }
+        return self.push(
+            TransitionBatch(
+                obs=obs,
+                critic_obs=critic_obs,
+                actions=actions,
+                rewards=rewards,
+                next_obs=next_obs,
+                next_critic_obs=next_critic_obs,
+                termination=termination,
+                timeout=timeout,
+            )
+        )
     
     def clear(self):
         """Clear the buffer and reset pointers."""
@@ -155,6 +160,21 @@ class DirectTransitionBuffer(ReplayBufferBase):
         """Return True if buffer is completely full."""
         return self.length >= self.max_steps
     
+    def sample(self, batch_size: int) -> TransitionBatch:
+        if self.length == 0:
+            raise ValueError("Buffer is empty, cannot sample.")
+        indices = torch.randint(0, self.length, (batch_size,), device=self.device)
+        return TransitionBatch(
+            obs=self.obs_buffer[indices],
+            critic_obs=self.critic_obs_buffer[indices],
+            actions=self.actions_buffer[indices],
+            rewards=self.rewards_buffer[indices],
+            next_obs=self.next_obs_buffer[indices],
+            next_critic_obs=self.next_critic_obs_buffer[indices],
+            termination=self.termination_buffer[indices],
+            timeout=self.timeout_buffer[indices],
+        )
+
     def sample_batch(self, batch_size: int) -> Dict[str, torch.Tensor]:
         """
         Sample a batch of transitions from the buffer.
@@ -165,22 +185,7 @@ class DirectTransitionBuffer(ReplayBufferBase):
         Returns:
             Dictionary with keys: obs, critic_obs, actions, rewards, next_obs, next_critic_obs, termination, timeout
         """
-        if self.length == 0:
-            raise ValueError("Buffer is empty, cannot sample.")
-        
-        # Sample random indices
-        indices = torch.randint(0, self.length, (batch_size,), device=self.device)
-        
-        return {
-            "obs": self.obs_buffer[indices],
-            "critic_obs": self.critic_obs_buffer[indices],
-            "actions": self.actions_buffer[indices],
-            "rewards": self.rewards_buffer[indices],
-            "next_obs": self.next_obs_buffer[indices],
-            "next_critic_obs": self.next_critic_obs_buffer[indices],
-            "termination": self.termination_buffer[indices],
-            "timeout": self.timeout_buffer[indices],
-        }
+        return self.sample(batch_size).as_dict()
     
     def mini_batch_generator(
         self,
@@ -227,19 +232,18 @@ class DirectTransitionBuffer(ReplayBufferBase):
                     additional_indices = torch.randint(0, self.length, (batch_size - len(indices),), device=self.device)
                     indices = torch.cat([indices, additional_indices])
                 
-                batch = {
-                    "obs": self.obs_buffer[indices],
-                    "critic_obs": self.critic_obs_buffer[indices],
-                    "actions": self.actions_buffer[indices],
-                    "rewards": self.rewards_buffer[indices],
-                    "next_obs": self.next_obs_buffer[indices],
-                    "next_critic_obs": self.next_critic_obs_buffer[indices],
-                    "termination": self.termination_buffer[indices],
-                    "timeout": self.timeout_buffer[indices],
-                }
-                
+                batch = TransitionBatch(
+                    obs=self.obs_buffer[indices],
+                    critic_obs=self.critic_obs_buffer[indices],
+                    actions=self.actions_buffer[indices],
+                    rewards=self.rewards_buffer[indices],
+                    next_obs=self.next_obs_buffer[indices],
+                    next_critic_obs=self.next_critic_obs_buffer[indices],
+                    termination=self.termination_buffer[indices],
+                    timeout=self.timeout_buffer[indices],
+                )
                 batches_yielded += 1
-                yield batch
+                yield batch.as_dict()
     
     @staticmethod
     def construct_from_cfg(cfg: "DirectTransitionBufferCfg", dim_params: dict, device, *args, num_envs=1, **kwargs):

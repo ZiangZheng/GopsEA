@@ -31,6 +31,7 @@ from GopsEA.runners import BaseRunner, BaseRunnerCfg
 from GopsEA.utils.env_wrapper.lab_wrapper import GopsEAEnvWrapper
 from isaaclab.envs import ManagerBasedEnvCfg
 from isaaclab.envs.common import ViewerCfg
+import gops_tasks  # noqa: F401
 
 def modify_env(env_cfg: ManagerBasedEnvCfg):
     env_cfg.viewer = ViewerCfg(
@@ -64,7 +65,6 @@ def main():
         with open(os.path.join(run_path, "params", "agent.pkl"), "rb") as f:
             agent_cfg: BaseRunnerCfg = pickle.load(f)
     else:
-        import demo_tasks
         env_cfg = load_cfg_from_registry(task_name, "env_cfg_entry_point")
         agent_cfg = load_cfg_from_registry(task_name, "GopsEA_entry_point")
 

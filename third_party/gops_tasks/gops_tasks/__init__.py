@@ -68,7 +68,9 @@ def _walk_packages(
                 if onerror is not None:
                     onerror(info.name)
                 else:
-                    raise
+                    # Keep best-effort import so partial task registration
+                    # still works when optional dependencies are missing.
+                    continue
             else:
                 path = getattr(sys.modules[info.name], "__path__", None) or []
 
