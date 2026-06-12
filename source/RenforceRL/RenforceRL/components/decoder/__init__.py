@@ -1,0 +1,2 @@
+from .binary_vec_decoder import BinaryVecDecoder, BinaryVecDecoderCfg
+from .continuous_vec_decoder import ContinuousVecDecoder, ContinuousVecDecoderCfg
