@@ -18,10 +18,11 @@ settings_path = os.path.join(repo_dir, ".vscode", "settings.json")
 
 # Relative source paths to include (relative to this script)
 relative_extra_paths = [
-    "./source/GopsEA",
-    "./source/robotlib",
-    "./source/rsl_rl",
-    "./source/wm_task",
+    "./GopsEA",
+    "./third_party/gops_tasks",
+    "./third_party/PickPlace",
+    "./third_party/PickPlace_simple",
+    "./third_party/robotlib",
 ]
 
 # Normalize and convert relative paths to absolute paths

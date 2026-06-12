@@ -18,7 +18,7 @@ def add_args_group(parser: argparse.ArgumentParser):
         parser: The parser to add the arguments to.
     """
     # create a new argument group
-    arg_group = parser.add_argument_group("renforce", description="Arguments for renforce rl agent.")
+    arg_group = parser.add_argument_group("gopsea", description="Arguments for GopsEA agent.")
     # -- experiment arguments
     arg_group.add_argument(
         "--algor", type=str, default=None, help="Algorithm Type."
@@ -27,6 +27,13 @@ def add_args_group(parser: argparse.ArgumentParser):
         "--experiment_name", type=str, default=None, help="Name of the experiment folder where logs will be stored."
     )
     arg_group.add_argument("--run_name", type=str, default=None, help="Run name suffix to the log directory.")
+    arg_group.add_argument("--max_iterations", type=int, default=None, help="Maximum number of training iterations.")
+    arg_group.add_argument(
+        "--num_steps_per_env",
+        type=int,
+        default=None,
+        help="Number of environment steps collected per iteration.",
+    )
     # -- load arguments
     arg_group.add_argument("--resume", type=bool, default=None, help="Whether to resume from a checkpoint.")
     arg_group.add_argument("--load_run", type=str, default=None, help="Name of the run folder to resume from.")
@@ -65,6 +72,10 @@ def parse_rl_cfg(task_name: str, args_cli: argparse.Namespace, rl_cfg=None) -> "
         rl_cfg.load_run = args_cli.load_run
     if args_cli.run_name is not None:
         rl_cfg.run_name = args_cli.run_name
+    if args_cli.max_iterations is not None:
+        rl_cfg.max_iterations = args_cli.max_iterations
+    if args_cli.num_steps_per_env is not None:
+        rl_cfg.num_steps_per_env = args_cli.num_steps_per_env
     if args_cli.logger is not None:
         rl_cfg.logger_cfg.logger = args_cli.logger
     # set the project name for wandb and neptune

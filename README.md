@@ -51,6 +51,20 @@ python scripts/GopsEA/train_lab.py \
     --rldevice cuda:0
 ```
 
+#### Pick-and-Place PPO
+
+```bash
+python scripts/GopsEA/train_lab.py \
+    --task GopsEA-FrankaCubeLift-PPO \
+    --num_envs 4096 \
+    --rldevice cuda:0
+
+python scripts/GopsEA/train_lab.py \
+    --task GopsEA-PickPlaceSimple-PPO \
+    --num_envs 4096 \
+    --rldevice cuda:0
+```
+
 #### SAC (Off-Policy)
 
 ```bash
@@ -87,6 +101,8 @@ python scripts/GopsEA/train_lab.py \
 | Anymal D | Flat Terrain | ✅ | ✅ | ✅ |
 | H1 | Rough Terrain | ✅ | ✅ | ✅ |
 | H1 | Flat Terrain | ✅ | ✅ | ✅ |
+| Franka | Cube Lift / Pick-and-Place | ✅ | - | - |
+| Franka | Pick-and-Place Simple | ✅ | - | - |
 
 ---
 

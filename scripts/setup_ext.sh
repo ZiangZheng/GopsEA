@@ -46,7 +46,9 @@ clone_repo git@github.com:Renforce-Dynamics/robotlib.git ./third_party/robotlib
 modules=(
     "./GopsEA"
     "./third_party/robotlib"
-    "./third_party/demo_tasks"
+    "./third_party/gops_tasks"
+    "./third_party/PickPlace"
+    "./third_party/PickPlace_simple"
 )
 
 install_modules "${modules[@]}"

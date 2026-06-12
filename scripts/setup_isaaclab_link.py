@@ -34,6 +34,8 @@ modules = [
     "./GopsEA",
     "./third_party/robotlib",
     "./third_party/gops_tasks",
+    "./third_party/PickPlace",
+    "./third_party/PickPlace_simple",
 ]
 
 def main():
