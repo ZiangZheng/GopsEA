@@ -1,6 +1,6 @@
-from RenforceRL import configclass
-from RenforceRL import runners, algorithms, components, networks
-from RenforceRL.buffer import PipeBufferTransitionCfg, replay_bundle, DirectTransitionBuffer, DirectTransitionBufferCfg
+from GopsEA import configclass
+from GopsEA import runners, algorithms, components, networks
+from GopsEA.buffer import PipeBufferTransitionCfg, replay_bundle, DirectTransitionBuffer, DirectTransitionBufferCfg
 import math
 
 @configclass

@@ -1,5 +1,5 @@
-from RenforceRL import configclass
-from RenforceRL import algorithms, components, networks, runners
+from GopsEA import configclass
+from GopsEA import algorithms, components, networks, runners
 
 
 @configclass
